@@ -1,0 +1,11 @@
+{
+    "name": "K8s Port-Forwarder",
+    "description": "Forward K8s ports",
+    "uuid": "k8s-port-forwarder@ramikg",
+    "url": "https://github.com/ramikg/k8s-port-forwarder",
+    "donations": { "github": "ramikg" },
+    "settings-schema": "org.gnome.shell.extensions.k8s-port-forwarder",
+    "shell-version": ["46", "47", "48", "49", "50"],
+    "session-modes": ["user", "unlock-dialog"],
+    "version-name": "0.0.1"
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+    <schema id="org.gnome.shell.extensions.k8s-port-forwarder"
+            path="/org/gnome/shell/extensions/k8s-port-forwarder/">
+        <key name="directories" type="s">
+            <default>'[]'</default>
+            <summary>Resource directories</summary>
+            <description>JSON array of directories with port-forward resources</description>
+        </key>
+    </schema>
+</schemalist>

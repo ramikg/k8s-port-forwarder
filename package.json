@@ -1,0 +1,14 @@
+{
+    "name": "k8s-port-forwarder",
+    "author": "ramikg",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc"
+    },
+    "devDependencies": {
+        "@girs/gjs": "^4.0.0-rc.1",
+        "@girs/gnome-shell": "^49.1.0",
+        "typescript": "^6.0.2"
+    }
+}
