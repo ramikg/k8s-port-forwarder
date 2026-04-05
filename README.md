@@ -24,6 +24,16 @@ make install
 
 _Additional requirement: Node.js_
 
+### Post-installation
+
+To enable the extension after installation:
+
+1. Log out and back in (or reboot).
+2. Run:
+    ```bash
+    gnome-extensions enable k8s-port-forwarder@ramikg
+    ```
+
 ## Configuration
 
 You can either configure the directories & port-forwarded resources from the UI:
