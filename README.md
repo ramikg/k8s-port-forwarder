@@ -36,13 +36,8 @@ To enable the extension after installation:
 
 ## Configuration
 
-You can either configure the directories & port-forwarded resources from the UI:
-
-```bash
-gnome-extensions prefs k8s-port-forwarder@ramikg
-```
-
-Or by explicitly setting the entire configuration:
+You can either configure the directories & port-forwarded resources from the UI (via the right-click menu),  
+or by explicitly setting the entire configuration:
 
 ```bash
 GSETTINGS_SCHEMA_DIR=~/.local/share/gnome-shell/extensions/k8s-port-forwarder@ramikg/schemas \
