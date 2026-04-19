@@ -21,6 +21,8 @@ type DirectoryState = Directory & {
     menu: PopupMenu.PopupSubMenuMenuItem;
     activeLabel: St.Label;
     numberOfActiveResources: number;
+    playAllButton: St.Button;
+    pauseAllButton: St.Button;
 };
 
 const Indicator = GObject.registerClass(
@@ -68,16 +70,17 @@ const Indicator = GObject.registerClass(
                 text: `0/${directory.resources.length}`,
             });
             menu.add_child(activeLabel);
+            const directoryControls = new St.BoxLayout({ vertical: false });
+            const playAllButton = this._createIconButton(PLAY_ICON);
+            const pauseAllButton = this._createIconButton(PAUSE_ICON);
             const directoryState: DirectoryState = {
                 ...directory,
                 menu,
                 activeLabel,
                 numberOfActiveResources: 0,
+                playAllButton,
+                pauseAllButton,
             };
-
-            const directoryControls = new St.BoxLayout({ vertical: false });
-            const playAllButton = this._createIconButton(PLAY_ICON);
-            const pauseAllButton = this._createIconButton(PAUSE_ICON);
             playAllButton.connect("clicked", () => {
                 for (const resource of directoryState.resources) {
                     this._startResource(directoryState, resource);
@@ -95,6 +98,7 @@ const Indicator = GObject.registerClass(
             for (const resource of directoryState.resources) {
                 this._buildResourceMenuItem(directoryState, resource);
             }
+            this._updateDirectoryControls(directoryState);
 
             (this.menu as PopupMenu.PopupMenu).addMenuItem(menu);
         }
@@ -166,6 +170,19 @@ const Indicator = GObject.registerClass(
             directoryState.activeLabel.text = `${directoryState.numberOfActiveResources}/${directoryState.resources.length}`;
         }
 
+        _setDirectoryButton(button: St.Button, enabled: boolean) {
+            button.reactive = enabled;
+            button.can_focus = enabled;
+            button.opacity = enabled ? 255 : 64;
+        }
+
+        _updateDirectoryControls(directoryState: DirectoryState) {
+            const active = directoryState.numberOfActiveResources;
+            const total = directoryState.resources.length;
+            this._setDirectoryButton(directoryState.playAllButton, active < total);
+            this._setDirectoryButton(directoryState.pauseAllButton, active > 0);
+        }
+
         _setButtonIcon(resource: Resource, iconName: string) {
             const button = this._resourceButtons.get(getResourceKey(resource));
             if (button) {
@@ -187,6 +204,7 @@ const Indicator = GObject.registerClass(
             if (process) {
                 directoryState.numberOfActiveResources += 1;
                 this._updateActiveLabel(directoryState);
+                this._updateDirectoryControls(directoryState);
                 this._updateExtensionIcon();
                 this._setButtonIcon(resource, PAUSE_ICON);
             }
@@ -203,6 +221,7 @@ const Indicator = GObject.registerClass(
             this._processManager.addExitMessage(resourceKey);
             directoryState.numberOfActiveResources -= 1;
             this._updateActiveLabel(directoryState);
+            this._updateDirectoryControls(directoryState);
             this._updateExtensionIcon();
             this._setButtonIcon(resource, PLAY_ICON);
         }
