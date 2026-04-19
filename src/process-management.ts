@@ -10,7 +10,7 @@ const OUTPUT_READ_CHUNK_SIZE_IN_BYTES = 4096;
 export type ResourceKey = string;
 
 export const getResourceKey = (resource: Resource): ResourceKey =>
-    `${resource.context}/${resource.type}/${resource.namespace}/${resource.name}`;
+    `${resource.context}::${resource.namespace}::${resource.type}/${resource.name}`;
 
 export interface ProcessState {
     // We're nulling just the process property instead of the entire state because the PID and exit message remain to be displayed in the log.
