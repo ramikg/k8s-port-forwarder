@@ -1,7 +1,7 @@
-import Gio from "gi://Gio";
-import GLib from "gi://GLib";
-import * as Main from "resource:///org/gnome/shell/ui/main.js";
-import type { Resource } from "./types.js";
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import type {Resource} from './types.js';
 
 const MAX_LOG_SIZE_IN_BYTES = 100_000;
 const OUTPUT_READ_CHUNK_SIZE_IN_BYTES = 4096;
@@ -27,42 +27,39 @@ export class ProcessManager {
 
     spawnPortForward = (
         resource: Resource,
-        onExit: () => void,
+        onExit: () => void
     ): Gio.Subprocess | null => {
         try {
             const process = Gio.Subprocess.new(
                 [
-                    "kubectl",
-                    "port-forward",
+                    'kubectl',
+                    'port-forward',
                     `--context=${resource.context}`,
                     `--namespace=${resource.namespace}`,
                     `${resource.type}/${resource.name}`,
                     `${resource.localPort}:${resource.remotePort}`,
                 ],
-                Gio.SubprocessFlags.STDOUT_PIPE |
-                    Gio.SubprocessFlags.STDERR_PIPE,
+                Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
             );
             const resourceKey = getResourceKey(resource);
             this.state.set(resourceKey, {
                 process,
                 pidString: process.get_identifier(),
-                log: "",
+                log: '',
                 exitMessage: null,
             });
             const stdout = process.get_stdout_pipe();
             const stderr = process.get_stderr_pipe();
-            if (stdout) {
-                this._readStream(stdout, resourceKey);
-            }
-            if (stderr) {
-                this._readStream(stderr, resourceKey);
-            }
+            if (stdout) this._readStream(stdout, resourceKey);
+
+            if (stderr) this._readStream(stderr, resourceKey);
+
             process.wait_async(null, () => onExit());
             return process;
         } catch (e) {
             Main.notifyError(
-                "Port-forward failed",
-                `${resource.name}: ${(e as Error).message}`,
+                'Port-forward failed',
+                `${resource.name}: ${(e as Error).message}`
             );
             return null;
         }
@@ -70,25 +67,22 @@ export class ProcessManager {
 
     addExitMessage = (resourceKey: ResourceKey) => {
         const processState = this.state.get(resourceKey);
-        if (!processState) {
-            return;
-        }
-        const pidStr = processState.pidString
-            ? `${processState.pidString} `
-            : "";
+        if (!processState) return;
+
+        const pidStr = processState.pidString ? `${processState.pidString} ` : '';
         processState.exitMessage = `Process ${pidStr}exited.`;
         this.onLogUpdated?.(resourceKey);
     };
 
     buildLogMarkup = (resourceKey: ResourceKey): string => {
         const processState = this.state.get(resourceKey);
-        const rawLog = processState?.log ?? "";
+        const rawLog = processState?.log ?? '';
         const escaped = GLib.markup_escape_text(rawLog, -1);
         const exitMsg = processState?.exitMessage;
-        if (exitMsg) {
+        if (exitMsg)
             return `<span color="#dddddd">${escaped}</span>\n<span color="#ff5555">${GLib.markup_escape_text(exitMsg, -1)}</span>`;
-        }
-        return `<span color="#dddddd">${escaped || "(Process has no output yet.)"}</span>`;
+
+        return `<span color="#dddddd">${escaped || '(Process has no output yet.)'}</span>`;
     };
 
     clearResourceState = (resourceKey: ResourceKey) => {
@@ -96,11 +90,9 @@ export class ProcessManager {
     };
 
     destroyAllProcesses = () => {
-        for (const processState of this.state.values()) {
-            if (processState.process) {
-                processState.process.force_exit();
-            }
-        }
+        for (const processState of this.state.values())
+            if (processState.process) processState.process.force_exit();
+
         this.state.clear();
     };
 
@@ -119,14 +111,10 @@ export class ProcessManager {
                             const processState = this.state.get(resourceKey);
                             if (processState) {
                                 processState.log += text;
-                                if (
-                                    processState.log.length >
-                                    MAX_LOG_SIZE_IN_BYTES
-                                ) {
+                                if (processState.log.length > MAX_LOG_SIZE_IN_BYTES) {
                                     // Keep only the last MAX_LOG_IN_BYTES bytes
-                                    processState.log = processState.log.slice(
-                                        -MAX_LOG_SIZE_IN_BYTES,
-                                    );
+                                    processState.log =
+                                        processState.log.slice(-MAX_LOG_SIZE_IN_BYTES);
                                 }
                                 this.onLogUpdated?.(resourceKey);
                             }
@@ -136,7 +124,7 @@ export class ProcessManager {
                 } catch {
                     // Stream closed or process exited
                 }
-            },
+            }
         );
     };
 }

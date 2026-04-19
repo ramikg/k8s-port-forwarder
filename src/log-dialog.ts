@@ -1,7 +1,7 @@
-import St from "gi://St";
-import Clutter from "gi://Clutter";
-import * as Main from "resource:///org/gnome/shell/ui/main.js";
-import type { ProcessManager, ResourceKey } from "./process-management.js";
+import St from 'gi://St';
+import Clutter from 'gi://Clutter';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import type {ProcessManager, ResourceKey} from './process-management.js';
 
 export class LogDialog {
     _dialog: St.BoxLayout | null = null;
@@ -12,12 +12,9 @@ export class LogDialog {
 
     constructor(processManager: ProcessManager) {
         this._processManager = processManager;
-        processManager.onLogUpdated = (key) => {
-            if (this._dialogKey === key && this._label) {
-                this._label.set_markup(
-                    this._processManager.buildLogMarkup(key),
-                );
-            }
+        processManager.onLogUpdated = key => {
+            if (this._dialogKey === key && this._label)
+                this._label.set_markup(this._processManager.buildLogMarkup(key));
         };
     }
 
@@ -26,34 +23,33 @@ export class LogDialog {
 
         const container = new St.BoxLayout({
             vertical: true,
-            style: "background-color: rgba(30, 30, 30, 0.95); border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1);",
+            style: 'background-color: rgba(30, 30, 30, 0.95); border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1);',
         });
 
-        const titleBar = new St.BoxLayout({ vertical: false });
+        const titleBar = new St.BoxLayout({vertical: false});
         const title = new St.Label({
             text: resourceKey,
-            style: "font-weight: bold; font-size: 14px; color: #fff;",
+            style: 'font-weight: bold; font-size: 14px; color: #fff;',
             x_expand: true,
         });
         const closeButton = new St.Button({
             child: new St.Icon({
-                icon_name: "window-close-symbolic",
-                style_class: "popup-menu-icon",
+                icon_name: 'window-close-symbolic',
+                style_class: 'popup-menu-icon',
             }),
-            style_class: "system-menu-action",
+            style_class: 'system-menu-action',
         });
-        closeButton.connect("clicked", () => this.close());
+        closeButton.connect('clicked', () => this.close());
         titleBar.add_child(title);
         titleBar.add_child(closeButton);
         container.add_child(titleBar);
 
         title.reactive = true;
         title.connect(
-            "button-press-event",
+            'button-press-event',
             (_actor: Clutter.Actor, event: Clutter.Event) => {
-                if (event.get_button() !== 1) {
-                    return Clutter.EVENT_PROPAGATE;
-                }
+                if (event.get_button() !== 1) return Clutter.EVENT_PROPAGATE;
+
                 const [mouseX, mouseY] = event.get_coords();
                 const [containerX, containerY] = container.get_position();
                 const offsetX = mouseX - containerX;
@@ -62,15 +58,15 @@ export class LogDialog {
                 const grab = global.stage.grab(title);
 
                 const motionId = title.connect(
-                    "motion-event",
+                    'motion-event',
                     (_a: Clutter.Actor, motionEvent: Clutter.Event) => {
                         const [mx, my] = motionEvent.get_coords();
                         container.set_position(mx - offsetX, my - offsetY);
                         return Clutter.EVENT_STOP;
-                    },
+                    }
                 );
 
-                const releaseId = title.connect("button-release-event", () => {
+                const releaseId = title.connect('button-release-event', () => {
                     title.disconnect(motionId);
                     title.disconnect(releaseId);
                     grab.dismiss();
@@ -78,11 +74,11 @@ export class LogDialog {
                 });
 
                 return Clutter.EVENT_STOP;
-            },
+            }
         );
 
         const scrollView = new St.ScrollView({
-            style: "height: 400px; width: 600px; margin-top: 8px;",
+            style: 'height: 400px; width: 600px; margin-top: 8px;',
             overlay_scrollbars: true,
         });
 
@@ -91,11 +87,11 @@ export class LogDialog {
             line_wrap: true,
             selectable: true,
             reactive: true,
-            font_name: "Monospace 11",
+            font_name: 'Monospace 11',
         });
         label.set_markup(this._processManager.buildLogMarkup(resourceKey));
         label.connect(
-            "button-press-event",
+            'button-press-event',
             (_actor: Clutter.Actor, event: Clutter.Event) => {
                 if (event.get_button() === 3) {
                     const [x, y] = event.get_coords();
@@ -104,12 +100,12 @@ export class LogDialog {
                 }
                 this._closeContextMenu();
                 return Clutter.EVENT_PROPAGATE;
-            },
+            }
         );
 
         const box = new St.BoxLayout({
             vertical: true,
-            style: "padding: 8px;",
+            style: 'padding: 8px;',
         });
         box.add_child(label);
         scrollView.set_child(box);
@@ -120,13 +116,15 @@ export class LogDialog {
         this._label = label;
         this._dialogKey = resourceKey;
 
-        const monitor = Main.layoutManager.primaryMonitor!;
-        const [, natWidth] = container.get_preferred_width(-1);
-        const [, natHeight] = container.get_preferred_height(-1);
-        container.set_position(
-            Math.floor((monitor.width - natWidth) / 2),
-            Math.floor((monitor.height - natHeight) / 2),
-        );
+        const monitor = Main.layoutManager.primaryMonitor;
+        if (monitor) {
+            const [, natWidth] = container.get_preferred_width(-1);
+            const [, natHeight] = container.get_preferred_height(-1);
+            container.set_position(
+                Math.floor((monitor.width - natWidth) / 2),
+                Math.floor((monitor.height - natHeight) / 2)
+            );
+        }
     };
 
     close = () => {
@@ -145,28 +143,25 @@ export class LogDialog {
 
         const menu = new St.BoxLayout({
             vertical: true,
-            style: "background-color: rgba(40, 40, 40, 0.95); border-radius: 8px; padding: 4px; border: 1px solid rgba(255, 255, 255, 0.1);",
+            style: 'background-color: rgba(40, 40, 40, 0.95); border-radius: 8px; padding: 4px; border: 1px solid rgba(255, 255, 255, 0.1);',
         });
 
         const copyButton = new St.Button({
-            label: "Copy",
-            style_class: "popup-menu-item",
+            label: 'Copy',
+            style_class: 'popup-menu-item',
         });
-        copyButton.connect("clicked", () => {
+        copyButton.connect('clicked', () => {
             const selection = textActor.get_selection();
             const text = selection || textActor.get_text();
-            St.Clipboard.get_default().set_text(
-                St.ClipboardType.CLIPBOARD,
-                text,
-            );
+            St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, text);
             this._closeContextMenu();
         });
 
         const selectAllButton = new St.Button({
-            label: "Select All",
-            style_class: "popup-menu-item",
+            label: 'Select All',
+            style_class: 'popup-menu-item',
         });
-        selectAllButton.connect("clicked", () => {
+        selectAllButton.connect('clicked', () => {
             textActor.set_selection(0, textActor.get_text().length);
             this._closeContextMenu();
         });

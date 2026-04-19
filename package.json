@@ -4,11 +4,35 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "format": "prettier --check .",
+        "lint": "eslint .",
+        "prepare": "husky"
     },
     "devDependencies": {
+        "@eslint/config-helpers": "^0.5.5",
         "@girs/gjs": "^4.0.0-rc.1",
         "@girs/gnome-shell": "^49.1.0",
-        "typescript": "^6.0.2"
+        "eslint": "^10.2.1",
+        "eslint-config-gnome": "git+https://gitlab.gnome.org/World/javascript/eslint-config-gnome.git#c479d059e8d9ea99c3b53c2ea43abf7fdb05eb51",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.4.0",
+        "prettier": "^3.8.3",
+        "typescript": "^6.0.2",
+        "typescript-eslint": "^8.58.2"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "printWidth": 90,
+        "singleQuote": true,
+        "trailingComma": "es5",
+        "bracketSpacing": false,
+        "arrowParens": "avoid"
+    },
+    "lint-staged": {
+        "**/*.{js,ts,json,md,yaml}": [
+            "prettier --write",
+            "eslint"
+        ]
     }
 }
