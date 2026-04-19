@@ -10,11 +10,10 @@
         "target": "ES2023",
         "lib": ["ES2023"]
     },
-    "include": ["src/ambient.d.ts"],
+    "include": ["src/ambient.d.ts", "src/types.d.ts"],
     "files": [
         "src/extension.ts",
         "src/prefs.ts",
-        "src/types.ts",
         "src/process-management.ts",
         "src/log-dialog.ts"
     ]

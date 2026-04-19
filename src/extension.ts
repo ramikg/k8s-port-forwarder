@@ -28,7 +28,7 @@ const Indicator = GObject.registerClass(
         declare _logDialog: LogDialog;
         declare _resourceButtons: Map<ResourceKey, St.Button>;
         declare _icon: St.Icon;
-        declare _configurationMenu: PopupMenu.PopupMenu;
+        declare _configurationMenu: PopupMenu.PopupMenu | null;
         declare onConfigurationClick: (() => void) | null;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,7 +60,7 @@ const Indicator = GObject.registerClass(
                 configurationItem.label
             );
             configurationItem.connect('activate', () => {
-                this._configurationMenu.close();
+                this._configurationMenu?.close();
                 this.onConfigurationClick?.();
             });
             this._configurationMenu.addMenuItem(configurationItem);
@@ -71,7 +71,7 @@ const Indicator = GObject.registerClass(
                 event.type() === Clutter.EventType.BUTTON_PRESS &&
                 event.get_button() === Clutter.BUTTON_SECONDARY
             ) {
-                this._configurationMenu.toggle();
+                this._configurationMenu?.toggle();
                 return Clutter.EVENT_STOP;
             }
             return super.vfunc_event(event);
@@ -246,8 +246,11 @@ const Indicator = GObject.registerClass(
         }
 
         destroy() {
-            Main.panel.menuManager.removeMenu(this._configurationMenu);
-            this._configurationMenu.destroy();
+            if (this._configurationMenu) {
+                Main.panel.menuManager.removeMenu(this._configurationMenu);
+                this._configurationMenu.destroy();
+                this._configurationMenu = null;
+            }
             super.destroy();
         }
     }

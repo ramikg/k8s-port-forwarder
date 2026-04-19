@@ -16,7 +16,6 @@ $(NAME).zip: dist/extension.js metadata.json resources/icon-symbolic.svg schemas
 	@cp resources/icon-symbolic.svg dist/resources/
 	@mkdir -p dist/schemas
 	@cp schemas/*.gschema.xml dist/schemas/
-	@glib-compile-schemas dist/schemas/
 	@(cd dist && zip ../$(NAME).zip -9r .)
 
 pack: $(NAME).zip

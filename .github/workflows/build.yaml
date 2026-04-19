@@ -14,10 +14,6 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
-            - name: Install system dependencies
-              run: |
-                  # Required for glib-compile-schemas
-                  sudo apt-get install -y libglib2.0-dev-bin
             - name: Install npm dependencies
               run: npm ci
             - name: Format
