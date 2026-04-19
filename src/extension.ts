@@ -1,6 +1,7 @@
 import GObject from "gi://GObject";
 import St from "gi://St";
 import Gio from "gi://Gio";
+import Clutter from "gi://Clutter";
 import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
@@ -31,6 +32,8 @@ const Indicator = GObject.registerClass(
         declare _logDialog: LogDialog;
         declare _resourceButtons: Map<ResourceKey, St.Button>;
         declare _icon: St.Icon;
+        declare _configurationMenu: PopupMenu.PopupMenu;
+        declare onConfigurationClick: (() => void) | null;
 
         _init(...args: any[]) {
             super._init(...args);
@@ -43,6 +46,44 @@ const Indicator = GObject.registerClass(
             this._processManager = new ProcessManager();
             this._logDialog = new LogDialog(this._processManager);
             this._resourceButtons = new Map();
+            this.onConfigurationClick = null;
+
+            this._configurationMenu = new PopupMenu.PopupMenu(
+                this,
+                0.5,
+                St.Side.TOP,
+            );
+            Main.layoutManager.uiGroup.add_child(this._configurationMenu.actor);
+            this._configurationMenu.actor.hide();
+            Main.panel.menuManager.addMenu(this._configurationMenu);
+
+            const configurationItem = new PopupMenu.PopupMenuItem(
+                "Configuration",
+            );
+            const configurationIcon = new St.Icon({
+                icon_name: "preferences-system-symbolic",
+                style_class: "popup-menu-icon",
+            });
+            configurationItem.insert_child_below(
+                configurationIcon,
+                configurationItem.label,
+            );
+            configurationItem.connect("activate", () => {
+                this._configurationMenu.close();
+                this.onConfigurationClick?.();
+            });
+            this._configurationMenu.addMenuItem(configurationItem);
+        }
+
+        vfunc_event(event: Clutter.Event): boolean {
+            if (
+                event.type() === Clutter.EventType.BUTTON_PRESS &&
+                event.get_button() === Clutter.BUTTON_SECONDARY
+            ) {
+                this._configurationMenu.toggle();
+                return Clutter.EVENT_STOP;
+            }
+            return super.vfunc_event(event);
         }
 
         setIconPath(extensionPath: string) {
@@ -231,6 +272,12 @@ const Indicator = GObject.registerClass(
             this._processManager.destroyAllProcesses();
             this._updateExtensionIcon();
         }
+
+        destroy() {
+            Main.panel.menuManager.removeMenu(this._configurationMenu);
+            this._configurationMenu.destroy();
+            super.destroy();
+        }
     },
 );
 
@@ -260,6 +307,7 @@ export default class KubernetesPortForwardExtension extends Extension {
         this._settings = this.getSettings();
         this._indicator = new Indicator(0.0, "Kubernetes Port-Forward");
         this._indicator.setIconPath(this.path);
+        this._indicator.onConfigurationClick = () => this.openPreferences();
         this._indicator.rebuildMenu(this._loadDirectories());
         Main.panel.addToStatusArea(this.uuid, this._indicator);
 
