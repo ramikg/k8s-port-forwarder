@@ -48,7 +48,6 @@ const Indicator = GObject.registerClass(
             this._configurationMenu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
             Main.layoutManager.uiGroup.add_child(this._configurationMenu.actor);
             this._configurationMenu.actor.hide();
-            Main.panel.menuManager.addMenu(this._configurationMenu);
 
             const configurationItem = new PopupMenu.PopupMenuItem('Configuration');
             const configurationIcon = new St.Icon({
@@ -286,6 +285,10 @@ export default class KubernetesPortForwardExtension extends Extension {
         this._indicator.onConfigurationClick = () => this.openPreferences();
         this._indicator.rebuildMenu(this._loadDirectories());
         Main.panel.addToStatusArea(this.uuid, this._indicator);
+        if (this._indicator._configurationMenu)
+            // Should be called after `addToStatusArea`. Otherwise, hovering over the extension icon
+            // when another extension's menu is open would open the configuration menu.
+            Main.panel.menuManager.addMenu(this._indicator._configurationMenu);
 
         this._settingsChangedId = this._settings.connect('changed::directories', () => {
             this._indicator?.rebuildMenu(this._loadDirectories());
