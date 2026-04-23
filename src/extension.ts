@@ -35,6 +35,7 @@ const Indicator = GObject.registerClass(
         _init(...args: any[]) {
             super._init(...args);
 
+            this.set_style('-natural-hpadding: 4px; -minimum-hpadding: 4px;');
             this._icon = new St.Icon({
                 style_class: 'system-status-icon',
             });
