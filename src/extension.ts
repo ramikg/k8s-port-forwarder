@@ -260,7 +260,7 @@ export default class KubernetesPortForwardExtension extends Extension {
     _indicator: InstanceType<typeof Indicator> | null = null;
     _settings: Gio.Settings | null = null;
     _settingsChangedId: number = 0;
-    _screenSaverSubscriptionId: number | null = null;
+    _sessionModeUpdatedId: number = 0;
 
     _loadDirectories(): Directory[] {
         if (!this._settings) return [];
@@ -295,26 +295,21 @@ export default class KubernetesPortForwardExtension extends Extension {
             this._indicator?.rebuildMenu(this._loadDirectories());
         });
 
-        this._screenSaverSubscriptionId = Gio.DBus.session.signal_subscribe(
-            null,
-            'org.gnome.ScreenSaver',
-            'ActiveChanged',
-            '/org/gnome/ScreenSaver',
-            null,
-            Gio.DBusSignalFlags.NONE,
-            (_connection, _sender, _path, _iface, _signal, params) => {
-                const active = params.get_child_value(0).get_boolean();
-                if (this._indicator) this._indicator.container.visible = !active;
+        this._sessionModeUpdatedId = Main.sessionMode.connect('updated', () => {
+            if (this._indicator) {
+                this._indicator.container.visible =
+                    Main.sessionMode.currentMode === 'user' ||
+                    Main.sessionMode.parentMode === 'user';
             }
-        );
+        });
     }
 
     disable() {
         // The extension uses unlock-dialog to avoid the port-forward processes from being killed when the user locks the screen. (Not very useful otherwise.)
-        // The signal subscription is used to hide the extension's icon from the lock screen, as we don't want the user to be able to control it from there.
-        if (this._screenSaverSubscriptionId != null) {
-            Gio.DBus.session.signal_unsubscribe(this._screenSaverSubscriptionId);
-            this._screenSaverSubscriptionId = null;
+        // The session-mode signal is used to hide the extension's icon from the lock screen, as we don't want the user to be able to control it from there.
+        if (this._sessionModeUpdatedId) {
+            Main.sessionMode.disconnect(this._sessionModeUpdatedId);
+            this._sessionModeUpdatedId = 0;
         }
         if (this._settings && this._settingsChangedId) {
             this._settings.disconnect(this._settingsChangedId);
