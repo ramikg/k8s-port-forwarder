@@ -50,6 +50,23 @@ const Indicator = GObject.registerClass(
             Main.layoutManager.uiGroup.add_child(this._configurationMenu.actor);
             this._configurationMenu.actor.hide();
 
+            // GNOME 50 dropped `vfunc_event` support and uses `Clutter.ClickGesture` instead.
+            // Note that GNOME 49 supports both, so it will still work if we decide to drop `vfunc_event`.
+            const hasVfuncEvent = !!PanelMenu.Button.prototype.vfunc_event;
+            if (!hasVfuncEvent) {
+                const configurationGesture = new Clutter.ClickGesture();
+                configurationGesture.set_recognize_on_press(true);
+                configurationGesture.set_required_button(Clutter.BUTTON_SECONDARY);
+                configurationGesture.connect('recognize', () => {
+                    this._configurationMenu?.toggle();
+                });
+                this.add_action_full(
+                    'configuration-menu',
+                    Clutter.EventPhase.CAPTURE,
+                    configurationGesture
+                );
+            }
+
             const configurationItem = new PopupMenu.PopupMenuItem('Configuration');
             const configurationIcon = new St.Icon({
                 icon_name: 'preferences-system-symbolic',
