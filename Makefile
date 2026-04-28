@@ -25,7 +25,9 @@ install: $(NAME).zip
 	gnome-extensions enable $(NAME)
 
 dev: install
-	dbus-run-session -- gnome-shell --devkit --wayland
+	@gnome_shell_version=$$(gnome-shell --version | awk '{print $$3}' | cut -d. -f1); \
+	if [ "$$gnome_shell_version" -lt 49 ]; then flag=--nested; else flag=--devkit; fi; \
+	dbus-run-session -- gnome-shell $$flag --wayland
 
 clean:
 	@rm -rf dist node_modules $(NAME).zip
