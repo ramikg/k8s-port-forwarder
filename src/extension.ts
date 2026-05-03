@@ -52,7 +52,11 @@ const Indicator = GObject.registerClass(
 
             // GNOME 50 dropped `vfunc_event` support and uses `Clutter.ClickGesture` instead.
             // Note that GNOME 49 supports both, so it will still work if we decide to drop `vfunc_event`.
-            const hasVfuncEvent = !!PanelMenu.Button.prototype.vfunc_event;
+            let hasVfuncEvent = false;
+            try {
+                // For some reason merely reading this value prevents the extension from being enabled in GNOME 50.
+                hasVfuncEvent = !!PanelMenu.Button.prototype.vfunc_event;
+            } catch {}
             if (!hasVfuncEvent) {
                 const configurationGesture = new Clutter.ClickGesture();
                 configurationGesture.set_recognize_on_press(true);
