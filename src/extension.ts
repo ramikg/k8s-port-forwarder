@@ -22,11 +22,16 @@ type DirectoryState = Directory & {
     pauseAllButton: St.Button;
 };
 
+type ResourceState = {
+    button: St.Button;
+    label: St.Label;
+};
+
 const Indicator = GObject.registerClass(
     class IndicatorInner extends PanelMenu.Button {
         declare _processManager: ProcessManager;
         declare _logDialog: LogDialog;
-        declare _resourceButtons: Map<ResourceKey, St.Button>;
+        declare _resourceStates: Map<ResourceKey, ResourceState>;
         declare _icon: St.Icon;
         declare _configurationMenu: PopupMenu.PopupMenu | null;
         declare onConfigurationClick: (() => void) | null;
@@ -43,7 +48,7 @@ const Indicator = GObject.registerClass(
 
             this._processManager = new ProcessManager();
             this._logDialog = new LogDialog(this._processManager);
-            this._resourceButtons = new Map();
+            this._resourceStates = new Map();
             this.onConfigurationClick = null;
 
             this._configurationMenu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
@@ -107,7 +112,7 @@ const Indicator = GObject.registerClass(
         rebuildMenu(directories: Directory[]) {
             this.destroyAllProcesses();
             (this.menu as PopupMenu.PopupMenu).removeAll();
-            this._resourceButtons.clear();
+            this._resourceStates.clear();
 
             for (const directory of directories) this._buildDirectoryMenu(directory);
         }
@@ -145,7 +150,7 @@ const Indicator = GObject.registerClass(
             for (const resource of directoryState.resources)
                 this._buildResourceMenuItem(directoryState, resource);
 
-            this._updateDirectoryControls(directoryState);
+            this._updateDirectoryState(directoryState);
 
             (this.menu as PopupMenu.PopupMenu).addMenuItem(menu);
         }
@@ -170,7 +175,10 @@ const Indicator = GObject.registerClass(
             );
             controlsBox.add_child(toggleButton);
             menuItem.add_child(controlsBox);
-            this._resourceButtons.set(getResourceKey(resource), toggleButton);
+            this._resourceStates.set(getResourceKey(resource), {
+                button: toggleButton,
+                label: menuItem.label as St.Label,
+            });
             directoryState.menu.menu.addMenuItem(menuItem);
         }
 
@@ -215,16 +223,19 @@ const Indicator = GObject.registerClass(
             button.opacity = enabled ? 255 : 64;
         }
 
-        _updateDirectoryControls(directoryState: DirectoryState) {
+        _updateDirectoryState(directoryState: DirectoryState) {
             const active = directoryState.numberOfActiveResources;
             const total = directoryState.resources.length;
             this._setDirectoryButton(directoryState.playAllButton, active < total);
             this._setDirectoryButton(directoryState.pauseAllButton, active > 0);
+            directoryState.menu.label.style = active > 0 ? 'font-weight: bold;' : '';
         }
 
-        _setButtonIcon(resource: Resource, iconName: string) {
-            const button = this._resourceButtons.get(getResourceKey(resource));
-            if (button) (button.child as St.Icon).icon_name = iconName;
+        _updateResourceState({resource, active}: {resource: Resource; active: boolean}) {
+            const state = this._resourceStates.get(getResourceKey(resource));
+            if (!state) return;
+            (state.button.child as St.Icon).icon_name = active ? PAUSE_ICON : PLAY_ICON;
+            state.label.style = active ? 'font-weight: bold;' : '';
         }
 
         _startResource(directoryState: DirectoryState, resource: Resource) {
@@ -239,9 +250,9 @@ const Indicator = GObject.registerClass(
             if (process) {
                 directoryState.numberOfActiveResources += 1;
                 this._updateActiveLabel(directoryState);
-                this._updateDirectoryControls(directoryState);
+                this._updateDirectoryState(directoryState);
                 this._updateExtensionIcon();
-                this._setButtonIcon(resource, PAUSE_ICON);
+                this._updateResourceState({resource, active: true});
             }
         }
 
@@ -255,9 +266,9 @@ const Indicator = GObject.registerClass(
             this._processManager.addExitMessage(resourceKey);
             directoryState.numberOfActiveResources -= 1;
             this._updateActiveLabel(directoryState);
-            this._updateDirectoryControls(directoryState);
+            this._updateDirectoryState(directoryState);
             this._updateExtensionIcon();
-            this._setButtonIcon(resource, PLAY_ICON);
+            this._updateResourceState({resource, active: false});
         }
 
         destroyAllProcesses() {
