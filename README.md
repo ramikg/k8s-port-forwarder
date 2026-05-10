@@ -6,33 +6,34 @@ Forward K8s ports from the GNOME Shell top bar.
 
 ## Installation
 
-### From GitHub releases
+Install from [GNOME Extensions](https://extensions.gnome.org/extension/9758/k8s-port-forwarder/).
+
+_Requirements: GNOME 46+, `kubectl`_
+
+### Alternative installation methods
+
+#### From GitHub releases
 
 1. Download the latest `.zip` from [Releases](https://github.com/ramikg/k8s-port-forwarder/releases).
 2. Run:
     ```bash
     gnome-extensions install --force k8s-port-forwarder@ramikg.zip
     ```
+3. Log out and back in (or reboot).
+4. Run:
+    ```bash
+    gnome-extensions enable k8s-port-forwarder@ramikg
+    ```
 
-_Requirements: GNOME 46+, `kubectl`_
-
-### From source code
+#### From source code
 
 ```bash
 make install
 ```
 
+Then follow steps 3–4 above.
+
 _Additional requirement: Node.js_
-
-### Post-installation
-
-To enable the extension after installation:
-
-1. Log out and back in (or reboot).
-2. Run:
-    ```bash
-    gnome-extensions enable k8s-port-forwarder@ramikg
-    ```
 
 ## Configuration
 
