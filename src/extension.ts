@@ -124,7 +124,9 @@ const Indicator = GObject.registerClass(
                 text: `0/${directory.resources.length}`,
             });
             menu.add_child(activeLabel);
-            const directoryControls = new St.BoxLayout({vertical: false});
+            const directoryControls = new St.BoxLayout({
+                orientation: Clutter.Orientation.HORIZONTAL,
+            });
             const playAllButton = this._createIconButton(PLAY_ICON);
             const pauseAllButton = this._createIconButton(PAUSE_ICON);
             const directoryState: DirectoryState = {
@@ -158,7 +160,7 @@ const Indicator = GObject.registerClass(
         _buildResourceMenuItem(directoryState: DirectoryState, resource: Resource) {
             const menuItem = new PopupMenu.PopupMenuItem(resource.name);
             const controlsBox = new St.BoxLayout({
-                vertical: false,
+                orientation: Clutter.Orientation.HORIZONTAL,
                 x_expand: true,
             });
             controlsBox.add_child(new St.Widget({x_expand: true}));

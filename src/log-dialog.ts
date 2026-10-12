@@ -22,11 +22,11 @@ export class LogDialog {
         this.close();
 
         const container = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             style: 'background-color: rgba(30, 30, 30, 0.95); border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1);',
         });
 
-        const titleBar = new St.BoxLayout({vertical: false});
+        const titleBar = new St.BoxLayout({orientation: Clutter.Orientation.HORIZONTAL});
         const title = new St.Label({
             text: resourceKey,
             style: 'font-weight: bold; font-size: 14px; color: #fff;',
@@ -104,7 +104,7 @@ export class LogDialog {
         );
 
         const box = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             style: 'padding: 8px;',
         });
         box.add_child(label);
@@ -142,7 +142,7 @@ export class LogDialog {
         this._closeContextMenu();
 
         const menu = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             style: 'background-color: rgba(40, 40, 40, 0.95); border-radius: 8px; padding: 4px; border: 1px solid rgba(255, 255, 255, 0.1);',
         });
 

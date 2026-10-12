@@ -8,7 +8,7 @@ Forward K8s ports from the GNOME Shell top bar.
 
 Install from [GNOME Extensions](https://extensions.gnome.org/extension/9758/k8s-port-forwarder/).
 
-_Requirements: GNOME 46+, `kubectl`_
+_Requirements: GNOME 48+, `kubectl`_
 
 ### Alternative installation methods
 
